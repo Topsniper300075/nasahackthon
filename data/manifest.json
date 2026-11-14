@@ -1,0 +1,52 @@
+{
+  "generated": "2026-11-14",
+  "purpose": "Local NASA data inputs for the Aurelia Mars Mission Console",
+  "files": [
+    {
+      "path": "mars-weather.json",
+      "source": "https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json",
+      "provider": "NASA Mars Science Laboratory",
+      "usedBy": "app.js:loadNASAData",
+      "use": "Latest available sol shown in the map data epoch"
+    },
+    {
+      "path": "curiosity-martian-surface.jpg",
+      "source": "https://images-assets.nasa.gov/image/PIA16018/PIA16018~orig.jpg",
+      "provider": "NASA Image and Video Library",
+      "asset": "PIA16018",
+      "usedBy": "app.js:drawMars",
+      "use": "Primary full-bleed Mars surface background beneath route and HUD overlays"
+    },
+    {
+      "path": "curiosity-surface-collection.json",
+      "source": "https://images-assets.nasa.gov/image/PIA16018/collection.json",
+      "provider": "NASA Image and Video Library",
+      "asset": "PIA16018",
+      "usedBy": "data provenance",
+      "use": "Local asset metadata and source traceability"
+    },
+    {
+      "path": "nasa-curiosity-surface-search.json",
+      "source": "https://images-api.nasa.gov/search?q=Curiosity%20rover%20Mars%20surface&media_type=image&page_size=20",
+      "provider": "NASA Image and Video Library API",
+      "usedBy": "data provenance",
+      "use": "Search response documenting the selected surface asset"
+    }
+  ],
+  "plannedAdapters": [
+    "THEMIS thermal/radiation product",
+    "SHARAD regional ice detections",
+    "USGS/NASA geology vector extract",
+    "InSight seismic event subset"
+  ],
+  "activeTerrainProduct": {
+    "path": "mola/mola-topography-16ppd.img",
+    "label": "mola/mola-topography-16ppd.xml",
+    "source": "https://pds-geosciences.wustl.edu/mgs/urn-nasa-pds-mgs_mola_topography_derived/meg016/megt90n000eb.img",
+    "provider": "NASA MGS MOLA / PDS Geosciences Node",
+    "coverage": "Global Mars, 16 pixels per degree",
+    "regionSampled": "134E-141E, 9S-2S around Gale Crater",
+    "usedBy": "app.js:loadMOLA",
+    "use": "WebGL heightfield vertices and elevation-derived terrain shading"
+  }
+}

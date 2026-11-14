@@ -1,0 +1,10 @@
+{
+  "name": "aurelia-mars-mission-console",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aurelia Mars mission planning console for the NASA Space Apps challenge.",
+  "scripts": {
+    "start": "npx serve .",
+    "check": "node --check app.js"
+  }
+}
