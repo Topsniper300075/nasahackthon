@@ -4,7 +4,7 @@ const terrainCanvas = document.getElementById("terrainCanvas");
 const profileCanvas = document.getElementById("profileCanvas");
 const profileCtx = profileCanvas.getContext("2d");
 const mapWrap = document.querySelector(".map-wrap");
-const state = { zoom: 1, offsetX: 0, offsetY: 0, seed: 8, route: [], nasaWeather: null, nasaImage: null, pitch: 1, bearing: 0, playing: false, progress: 0, molaReady: false, mola: null, molaGrid: null, routeGeo: [] };
+const state = { zoom: 1, offsetX: 0, offsetY: 0, seed: 8, route: [], nasaWeather: null, nasaImage: null, pitch: 1, bearing: 0, playing: false, progress: 0, molaReady: false, mola: null, molaGrid: null, routeGeo: [], weightMatrix: null, routeCost: 0 };
 const waypoints = [
   ["Aurelia Base", "0.0 km", "LOW", false], ["Delta Ridge", "2.8 km", "LOW", false],
   ["Strata Point", "5.4 km", "MODERATE", false], ["Murray Buttes", "8.9 km", "LOW", false],
@@ -105,6 +105,7 @@ function loadMOLA() {
     for (let lat = lat0; lat <= lat1 + step; lat += step) for (let lon = lon0; lon <= lon1 + step; lon += step) points.push({ lat, lon, elev: sample(lat, lon) });
     const colsLocal = Math.round((lon1-lon0)/step)+1;
     state.molaGrid = { points, cols: colsLocal, rows: Math.floor(points.length / colsLocal), lon0, lon1, lat0, lat1, step };
+    buildWeightMatrix(state.molaGrid);
     state.routeGeo = planRoute(state.molaGrid);
     updateRouteProfile();
     updateGeographicLabels();
@@ -169,7 +170,10 @@ function drawMars() {
       ctx.strokeStyle = "rgba(227,164,106,.11)"; ctx.beginPath(); ctx.ellipse(x - 2, y - 2, r * .75, r * .3, noise(i, 1) * 3, 0, Math.PI * 2); ctx.stroke();
     }
   }
-  if (hazards.terrain) drawElevationContours(w, h);
+  if (hazards.terrain) {
+    drawWeightMatrix(w, h);
+    drawElevationContours(w, h);
+  }
   drawHazardZones(w, h);
   if (hazards.radiation) { const r = ctx.createRadialGradient(w * .77, h * .35, 10, w * .77, h * .35, w * .34); r.addColorStop(0, "rgba(168,141,243,.22)"); r.addColorStop(1, "rgba(168,141,243,0)"); ctx.fillStyle = r; ctx.fillRect(0, 0, w, h); }
   if (hazards.dust) { ctx.fillStyle = "rgba(238,117,64,.1)"; ctx.beginPath(); ctx.ellipse(w * .2, h * .72, w * .28, h * .13, -.15, 0, Math.PI * 2); ctx.fill(); }
@@ -245,6 +249,43 @@ function drawElevationContours(w, h) {
     ctx.stroke();
   });
 }
+function getRiskWeights() {
+  const values = ["terrain", "radiation", "dust", "seismic", "distance"].map(id => Number(document.getElementById(id)?.value || 0));
+  const total = values.reduce((sum, value) => sum + value, 0) || 1;
+  return { terrain: values[0] / total, distance: values[4] / total };
+}
+function buildWeightMatrix(grid) {
+  const matrix = new Float32Array(grid.points.length);
+  const cellDistanceKm = grid.step * 59.2;
+  for (let y = 0; y < grid.rows; y++) for (let x = 0; x < grid.cols; x++) {
+    const index = y * grid.cols + x, point = grid.points[index];
+    const neighbors = [];
+    [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].forEach(([nx, ny]) => {
+      if (nx >= 0 && ny >= 0 && nx < grid.cols && ny < grid.rows) neighbors.push(grid.points[ny * grid.cols + nx]);
+    });
+    const maxSlope = neighbors.reduce((max, neighbor) => Math.max(max, Math.abs(neighbor.elev - point.elev) / cellDistanceKm), 0);
+    point.slope = maxSlope;
+    point.traversalWeight = Math.min(1, maxSlope / 35);
+    matrix[index] = point.traversalWeight;
+  }
+  state.weightMatrix = matrix;
+  grid.weightMatrix = matrix;
+}
+function drawWeightMatrix(w, h) {
+  const grid = state.molaGrid;
+  if (!grid?.weightMatrix) return;
+  const cellW = w / (grid.cols - 1), cellH = h / (grid.rows - 1);
+  ctx.save();
+  ctx.globalAlpha = .22;
+  for (let y = 0; y < grid.rows - 1; y++) for (let x = 0; x < grid.cols - 1; x++) {
+    const weight = grid.weightMatrix[y * grid.cols + x];
+    if (weight < .08) continue;
+    const hue = 24 - weight * 24;
+    ctx.fillStyle = `hsla(${hue}, 84%, 58%, ${.25 + weight * .5})`;
+    ctx.fillRect(x * cellW, y * cellH, cellW + 1, cellH + 1);
+  }
+  ctx.restore();
+}
 function planRoute(grid) {
   const start = { lon: 137.25, lat: -5.65 }, goal = { lon: 138.05, lat: -4.85 };
   const nearest = target => grid.points.reduce((best,p,i) => {
@@ -252,7 +293,8 @@ function planRoute(grid) {
     return score < best.score ? { index:i, score } : best;
   }, { index:0, score:Infinity }).index;
   const startIndex=nearest(start), goalIndex=nearest(goal), open=[startIndex], came=new Map(), g=new Map([[startIndex,0]]);
-  const heuristic = i => { const p=grid.points[i], q=grid.points[goalIndex]; return Math.hypot(p.lon-q.lon,p.lat-q.lat); };
+  const riskWeights = getRiskWeights();
+  const heuristic = i => { const p=grid.points[i], q=grid.points[goalIndex]; return Math.hypot(p.lon-q.lon,p.lat-q.lat) * (1 + riskWeights.distance); };
   const rows=grid.rows, cols=grid.cols;
   while (open.length) {
     open.sort((a,b)=>(g.get(a)+heuristic(a))-(g.get(b)+heuristic(b)));
@@ -265,13 +307,19 @@ function planRoute(grid) {
       const minLat=Math.min(start.lat,goal.lat)-.35, maxLat=Math.max(start.lat,goal.lat)+.35;
       if(next.lon<minLon||next.lon>maxLon||next.lat<minLat||next.lat>maxLat)return;
       const corridor = Math.abs((next.lon-start.lon)*(goal.lat-start.lat)-(next.lat-start.lat)*(goal.lon-start.lon));
-      const tentative=(g.get(current)||0)+Math.hypot(next.lon-here.lon,next.lat-here.lat)*(1+slope/350)+corridor*.35;
+      const stepKm = Math.hypot(next.lon-here.lon, next.lat-here.lat) * 59.2;
+      const slopeWeight = next.traversalWeight ?? Math.min(1, slope / 35);
+      const traversalMultiplier = 1 + riskWeights.terrain * slopeWeight * 8 + riskWeights.distance;
+      const tentative=(g.get(current)||0)+stepKm * traversalMultiplier + corridor * .35;
       if(tentative < (g.get(ni) ?? Infinity)){came.set(ni,current);g.set(ni,tentative);if(!open.includes(ni))open.push(ni);}
     });
   }
   const path=[]; let current=goalIndex;
   while (current !== undefined) { path.unshift(grid.points[current]); if(current===startIndex) break; current=came.get(current); }
-  if (path.length > 1) return path;
+  if (path.length > 1) {
+    state.routeCost = g.get(goalIndex) || 0;
+    return path;
+  }
   const fallback = [grid.points[startIndex]];
   let previous = grid.points[startIndex];
   for (let step = 1; step < 42; step++) {
@@ -285,6 +333,7 @@ function planRoute(grid) {
     if (next && next !== previous) { fallback.push(next); previous = next; }
   }
   fallback.push(grid.points[goalIndex]);
+  state.routeCost = g.get(goalIndex) || 0;
   return fallback;
 }
 function updateRouteProfile() {
@@ -307,7 +356,7 @@ function updateRouteProfile() {
   const routeDistance = state.routeGeo.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.lon-state.routeGeo[index].lon, point.lat-state.routeGeo[index].lat) * 59.2, 0);
   const detour = Math.max(0, routeDistance / Math.max(1, directDistance) - 1) * 100;
   document.getElementById("decisionList").innerHTML = [
-    ["↗", "Terrain relief", `A* favors ${Math.round(ascent)} m net ascent over the steep-rim hazard zones`, "MOLA"],
+    ["↗", "Terrain relief", `Weighted grid penalizes cells up to ${Math.round(Math.max(...state.routeGeo.map(point => point.slope || 0)))}% local grade`, "MOLA"],
     ["⌁", "Energy trade-off", `${detour.toFixed(0)}% longer than direct line to reduce slope cost`, `${routeDistance.toFixed(1)} km`],
     ["◌", "Route evidence", "Dashed line is direct; orange line is the computed corridor", "TRACEABLE"]
   ].map(([icon,title,copy,value], index) => `<div class="decision-row"><i class="decision-icon">${icon}</i><div><strong>${title}</strong><span>${copy}</span></div><span class="decision-value">${value}</span><div class="decision-bar"><i style="width:${[82, Math.min(95, 35+detour*2), 100][index]}%"></i></div></div>`).join("");
@@ -332,6 +381,10 @@ function updateRoute() {
   document.getElementById("riskScore").textContent = score;
   document.getElementById("distanceMetric").innerHTML = `${(18.6 + (weights[0]-30)*.04).toFixed(1)} <small>km</small>`;
   document.getElementById("timeMetric").innerHTML = `0${7 + Math.floor(score/35)}:${String(42 + score % 18).padStart(2,"0")} <small>h</small>`;
+  if (state.molaGrid) {
+    state.routeGeo = planRoute(state.molaGrid);
+    updateRouteProfile();
+  }
   drawMars();
 }
 function renderWaypoints() {
