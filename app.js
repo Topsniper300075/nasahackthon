@@ -5,11 +5,11 @@ const profileCanvas = document.getElementById("profileCanvas");
 const profileCtx = profileCanvas.getContext("2d");
 const mapWrap = document.querySelector(".map-wrap");
 const state = { zoom: 1, offsetX: 0, offsetY: 0, seed: 8, route: [], nasaWeather: null, nasaImage: null, hiriseImage: null, scienceLayers: null, seismicEvents: [], pitch: 1, bearing: 0, playing: false, progress: 0, molaReady: false, mola: null, molaGrid: null, routeGeo: [], weightMatrix: null, routeCost: 0 };
-const missionEndpoints = { start: { lon: 137.25, lat: -5.65 }, goal: { lon: 137.85, lat: -5.08 } };
+const missionEndpoints = { start: { lon: 137.25, lat: -5.65 }, goal: { lon: 137.45, lat: -5.15 } };
 const waypoints = [
   ["Aurelia Base", "0.0 km", "LOW", false], ["Delta Ridge", "2.8 km", "LOW", false],
   ["Strata Point", "5.4 km", "MODERATE", false], ["Murray Buttes", "8.9 km", "LOW", false],
-  ["Vera Rubin Ridge", "13.2 km", "MODERATE", false], ["Mount Sharp Goal", "18.6 km", "TARGET", true]
+  ["Vera Rubin Ridge", "13.2 km", "MODERATE", false], ["Mount Sharp Foothill", "TARGET", "TARGET", true]
 ];
 const hazards = { terrain: true, radiation: true, dust: true, seismic: false };
 
@@ -55,7 +55,7 @@ function drawProfile() {
   }
   profileCtx.beginPath(); values.forEach((value,i) => i ? profileCtx.lineTo(xFor(i), yFor(value)) : profileCtx.moveTo(xFor(i), yFor(value))); profileCtx.lineTo(xFor(values.length-1),h-30); profileCtx.lineTo(xFor(0),h-30); profileCtx.closePath(); profileCtx.fillStyle = "rgba(240,126,78,.22)"; profileCtx.fill();
   profileCtx.beginPath(); values.forEach((value,i) => i ? profileCtx.lineTo(xFor(i), yFor(value)) : profileCtx.moveTo(xFor(i), yFor(value))); profileCtx.strokeStyle = "#ff9464"; profileCtx.lineWidth = 3; profileCtx.stroke();
-  [0, values.length - 1].forEach((index, markerIndex) => { const x=xFor(index),y=yFor(values[index]); profileCtx.fillStyle=markerIndex ? "#cbb9ff" : "#ffd09d"; profileCtx.beginPath(); profileCtx.arc(x,y,5,0,Math.PI*2); profileCtx.fill(); profileCtx.fillStyle="#e9c09a"; profileCtx.fillText(markerIndex ? "MOUNT SHARP GOAL" : "AURELIA BASE", Math.min(w-140, x+8), y-10); });
+  [0, values.length - 1].forEach((index, markerIndex) => { const x=xFor(index),y=yFor(values[index]); profileCtx.fillStyle=markerIndex ? "#cbb9ff" : "#ffd09d"; profileCtx.beginPath(); profileCtx.arc(x,y,5,0,Math.PI*2); profileCtx.fill(); profileCtx.fillStyle="#e9c09a"; profileCtx.fillText(markerIndex ? "MOUNT SHARP FOOTHILL" : "AURELIA BASE", Math.min(w-140, x+8), y-10); });
   profileCtx.fillStyle="#9e8170"; profileCtx.fillText("DISTANCE ALONG MOLA ROUTE", w/2-65, h-8);
 }
 function terrainShader(type, source) {
@@ -481,7 +481,7 @@ function animateTraverse() {
   drawMars();
   requestAnimationFrame(animateTraverse);
 }
-document.getElementById("exportButton").addEventListener("click", () => { const content = `AURELIA MISSION BRIEF\nGale Crater Region / MSOL 018\nRisk index: ${document.getElementById("riskScore").textContent}\nTraverse: ${document.getElementById("distanceMetric").textContent.trim()}\nRoute: Aurelia Base -> Mount Sharp Goal`; const blob = new Blob([content], {type:"text/plain"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "aurelia-mission-brief.txt"; a.click(); URL.revokeObjectURL(a.href); });
+document.getElementById("exportButton").addEventListener("click", () => { const content = `AURELIA MISSION BRIEF\nGale Crater Region / MSOL 018\nRisk index: ${document.getElementById("riskScore").textContent}\nTraverse: ${document.getElementById("distanceMetric").textContent.trim()}\nRoute: Aurelia Base -> Mount Sharp Foothill`; const blob = new Blob([content], {type:"text/plain"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "aurelia-mission-brief.txt"; a.click(); URL.revokeObjectURL(a.href); });
 document.getElementById("objective").addEventListener("change", e => {
   const goals = {
     geology: ["Layered geology transect", "Sample contacts between the Murray and Stimson formations while preserving astronaut energy."],

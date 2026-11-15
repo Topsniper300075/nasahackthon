@@ -22,7 +22,6 @@ cost without a validated geospatial model.
 from __future__ import annotations
 
 import argparse
-import csv
 import heapq
 import json
 import math
@@ -186,8 +185,8 @@ def plan_route(
     grid: Grid,
     start_lon: float = 137.25,
     start_lat: float = -5.65,
-    goal_lon: float = 137.85,
-    goal_lat: float = -5.08,
+    goal_lon: float = 137.45,
+    goal_lat: float = -5.15,
     terrain_weight: float = 30.0,
     distance_weight: float = 10.0,
 ) -> Tuple[List[Point], float]:
@@ -253,6 +252,7 @@ def export_route(route: Sequence[Point], cost: float, output_path: Path) -> None
     """Export a notebook-friendly JSON route artifact."""
     payload = {
         "source": "NASA MGS MOLA MEGDR 16 ppd, resampled 0.12 degrees",
+        "demonstration_target": "Mount Sharp lower foothill at 137.45E, 5.15S",
         "elevation_reference": "MOLA areoid-relative metres",
         "mars_radius_km": MARS_RADIUS_KM,
         "cost": cost,

@@ -43,7 +43,7 @@ The map viewport supports an orbital bird's-eye view and a slanted 2.5D view. Dr
 
 The **SIDE** view is a fixed route cross-section: it plots the MOLA elevation of each computed route sample against distance, draws real elevation bands, labels the base and Mount Sharp goal, and uses the same zoom controls. It is intentionally not a free camera view, so height and relief remain legible and scientifically interpretable.
 
-The demonstration endpoints are Aurelia Base (137.25°E, 5.65°S) and the Aeolis Mons/Mount Sharp region (137.85°E, 5.08°S). Elevation labels are MOLA topography relative to the MOLA areoid, not mountain height above the crater floor; the commonly cited Mount Sharp relief is a separate geomorphological height and is not substituted into the route model.
+The demonstration endpoints are Aurelia Base (137.25°E, 5.65°S) and a lower Aeolis Mons/Mount Sharp foothill target (137.45°E, 5.15°S). The foothill target is used instead of an unsupported summit coordinate so the demonstrator represents a plausible traverse into the mountain complex rather than an arbitrary high northern endpoint. Elevation labels are MOLA topography relative to the MOLA areoid, not mountain height above the crater floor; the commonly cited Mount Sharp relief is a separate geomorphological height and is not substituted into the route model.
 
 The map also shows the direct-line comparison and hazard zones. “WHY THIS PATH” explains the route trade-offs: relief/ascent avoided, detour distance, and the MOLA-derived elevation profile. Hazard zones are explicitly marked as modeled overlays; they must not be presented as measured radiation, dust, or seismic observations until those products are georeferenced and loaded.
 

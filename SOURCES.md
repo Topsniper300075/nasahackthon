@@ -88,6 +88,13 @@ in [`app.js`](app.js) and [`mola_route_planner.py`](mola_route_planner.py).
 They are derived products and should not be cited as additional measured
 datasets.
 
+The current demonstration route runs from Aurelia Base
+(`137.25°E, 5.65°S`) to a lower Mount Sharp/Aeolis Mons foothill target
+(`137.45°E, 5.15°S`). This endpoint was selected to avoid presenting an
+unverified high northern coordinate as the mountain summit; it is a
+demonstration target for route planning, not a claim about the summit
+location or total mountain relief.
+
 ## Presentation dependencies
 
 The application has no runtime npm dependencies. The interface references the
