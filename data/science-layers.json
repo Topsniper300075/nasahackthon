@@ -15,7 +15,7 @@
     {
       "id": "hirise",
       "label": "HiRISE Gale DTM browse",
-      "status": "active",
+      "status": "context-only",
       "kind": "high-resolution-context",
       "source": "https://hirise.lpl.arizona.edu/dtm/dtm.php?ID=PSP_009650_1755",
       "localFile": "hirise-gale-dtm-color-altimetry.jpg",
