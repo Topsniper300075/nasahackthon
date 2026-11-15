@@ -248,6 +248,33 @@ def plan_route(
     return [grid.points[i] for i in route_indices], costs[goal_index]
 
 
+def a_star(
+    grid: Grid,
+    start_lon: float = 137.25,
+    start_lat: float = -5.65,
+    goal_lon: float = 137.45,
+    goal_lat: float = -5.15,
+    terrain_weight: float = 30.0,
+    distance_weight: float = 10.0,
+) -> Tuple[List[Point], float]:
+    """Notebook-facing A* entry point matching the teammate's F = G + H model.
+
+    G is the accumulated terrain-, distance-, and corridor-aware cost. H is the
+    Mars-surface distance heuristic to the selected goal. The implementation
+    delegates to the shared planner so notebook and browser routes use the same
+    MOLA grid, coordinates, and weighting rules.
+    """
+    return plan_route(
+        grid,
+        start_lon=start_lon,
+        start_lat=start_lat,
+        goal_lon=goal_lon,
+        goal_lat=goal_lat,
+        terrain_weight=terrain_weight,
+        distance_weight=distance_weight,
+    )
+
+
 def export_route(route: Sequence[Point], cost: float, output_path: Path) -> None:
     """Export a notebook-friendly JSON route artifact."""
     payload = {

@@ -63,12 +63,19 @@ In Jupyter:
 
 ```python
 from pathlib import Path
-from mola_route_planner import build_weight_matrix, load_mola_grid, plan_route
+from mola_route_planner import a_star, build_weight_matrix, load_mola_grid
 
 grid = load_mola_grid(Path("data/mola/mola-topography-16ppd.img"))
 weights = build_weight_matrix(grid)
-route, cost = plan_route(grid, terrain_weight=30, distance_weight=10)
+route, cost = a_star(grid, terrain_weight=30, distance_weight=10)
 ```
+
+The `a_star()` entry point is the notebook-compatible integration surface for
+the teammate's algorithm notes: it uses the standard `F(n) = G(n) + H(n)`
+structure while delegating to the same shared planner used by the browser.
+`G(n)` is the accumulated terrain-, distance-, and corridor-aware cost, while
+`H(n)` is the Mars-surface distance heuristic to the goal. This avoids
+duplicating the MOLA decoder or creating a second coordinate system.
 
 The Python module is intentionally limited to MOLA terrain and distance as active route costs. The other science layers remain context-only or planned until their official products are spatially registered and their uncertainties are modeled.
 
