@@ -1,0 +1,72 @@
+{
+  "generated": "2026-11-15",
+  "region": "Gale Crater / Aeolis Mons demonstration corridor",
+  "layers": [
+    {
+      "id": "mola",
+      "label": "MOLA topography",
+      "status": "active",
+      "kind": "raster",
+      "source": "https://pds-geosciences.wustl.edu/missions/mgs/megdr.html",
+      "localFile": "mola/mola-topography-16ppd.img",
+      "routeCost": true,
+      "caveat": "Regional DEM; not a rover-scale obstacle guarantee."
+    },
+    {
+      "id": "weather",
+      "label": "MSL weather context",
+      "status": "active",
+      "kind": "station",
+      "source": "https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json",
+      "localFile": "mars-weather.json",
+      "routeCost": false,
+      "caveat": "Gale station observations; not a spatial dust-front raster."
+    },
+    {
+      "id": "radiation",
+      "label": "MSL RAD radiation",
+      "status": "planned",
+      "kind": "station",
+      "source": "https://pds-ppi.igpp.ucla.edu/collection/MSL-M-RAD-3-RDR-V1.0:DATA",
+      "routeCost": false,
+      "caveat": "RAD is a time series at the Curiosity location. It is not valid to interpolate across Mount Sharp without a physical model."
+    },
+    {
+      "id": "dust",
+      "label": "REMS / Mars Climate Database",
+      "status": "context-only",
+      "kind": "station-and-model",
+      "source": "https://pds.nasa.gov/ds-view/pds/viewProfile.jsp?dsid=MSL-M-REMS-2-EDR-V1.0",
+      "routeCost": false,
+      "caveat": "Weather context is temporal and station/model based; it is not a live spatial dust hazard map."
+    },
+    {
+      "id": "seismic",
+      "label": "InSight SEIS quake catalog",
+      "status": "context-only",
+      "kind": "catalog",
+      "source": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn:nasa:pds:insight_seis&version=3.0",
+      "localFile": "insight-seismic-catalog.json",
+      "routeCost": false,
+      "caveat": "InSight is in Elysium Planitia, not Gale Crater. Events cannot be labeled as local Mount Sharp hazards."
+    },
+    {
+      "id": "chemistry",
+      "label": "MSL APXS / ChemCam / CheMin / SAM",
+      "status": "planned",
+      "kind": "point-observation",
+      "source": "https://pds-geosciences.wustl.edu/missions/msl/",
+      "routeCost": false,
+      "caveat": "Chemistry is measured at discrete rover targets, not as a continuous route raster."
+    },
+    {
+      "id": "geology",
+      "label": "CRISM / USGS geology",
+      "status": "planned",
+      "kind": "orbital-footprint",
+      "source": "https://pds-geosciences.wustl.edu/missions/mro/crism.htm",
+      "routeCost": false,
+      "caveat": "Orbital observations have nonuniform footprints and require product-specific map projection."
+    }
+  ]
+}

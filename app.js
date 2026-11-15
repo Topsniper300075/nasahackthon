@@ -4,7 +4,7 @@ const terrainCanvas = document.getElementById("terrainCanvas");
 const profileCanvas = document.getElementById("profileCanvas");
 const profileCtx = profileCanvas.getContext("2d");
 const mapWrap = document.querySelector(".map-wrap");
-const state = { zoom: 1, offsetX: 0, offsetY: 0, seed: 8, route: [], nasaWeather: null, nasaImage: null, pitch: 1, bearing: 0, playing: false, progress: 0, molaReady: false, mola: null, molaGrid: null, routeGeo: [], weightMatrix: null, routeCost: 0 };
+const state = { zoom: 1, offsetX: 0, offsetY: 0, seed: 8, route: [], nasaWeather: null, nasaImage: null, scienceLayers: null, seismicEvents: [], pitch: 1, bearing: 0, playing: false, progress: 0, molaReady: false, mola: null, molaGrid: null, routeGeo: [], weightMatrix: null, routeCost: 0 };
 const missionEndpoints = { start: { lon: 137.25, lat: -5.65 }, goal: { lon: 137.85, lat: -5.08 } };
 const waypoints = [
   ["Aurelia Base", "0.0 km", "LOW", false], ["Delta Ridge", "2.8 km", "LOW", false],
@@ -277,9 +277,10 @@ function drawElevationContours(w, h) {
   });
 }
 function getRiskWeights() {
-  const values = ["terrain", "radiation", "dust", "seismic", "distance"].map(id => Number(document.getElementById(id)?.value || 0));
-  const total = values.reduce((sum, value) => sum + value, 0) || 1;
-  return { terrain: values[0] / total, distance: values[4] / total };
+  const terrain = Number(document.getElementById("terrain")?.value || 0);
+  const distance = Number(document.getElementById("distance")?.value || 0);
+  const total = terrain + distance || 1;
+  return { terrain: terrain / total, distance: distance / total };
 }
 function buildWeightMatrix(grid) {
   const matrix = new Float32Array(grid.points.length);
@@ -389,6 +390,28 @@ function updateRouteProfile() {
     ["◌", "Route evidence", "Dashed line is direct; orange line is the computed corridor", "TRACEABLE"]
   ].map(([icon,title,copy,value], index) => `<div class="decision-row"><i class="decision-icon">${icon}</i><div><strong>${title}</strong><span>${copy}</span></div><span class="decision-value">${value}</span><div class="decision-bar"><i style="width:${[82, Math.min(95, 35+detour*2), 100][index]}%"></i></div></div>`).join("");
 }
+function renderScienceStatus() {
+  const container = document.getElementById("scienceDataStatus");
+  if (!container || !state.scienceLayers) return;
+  const labels = { active: "ACTIVE", "context-only": "CONTEXT", planned: "PLANNED" };
+  container.innerHTML = state.scienceLayers.layers.map(layer => `<div class="science-status-row"><span class="science-status-dot ${layer.status}"></span><span>${layer.label}</span><b>${labels[layer.status] || layer.status.toUpperCase()}</b></div>`).join("");
+  const seismic = document.querySelector("#seismicNote");
+  if (seismic && state.seismicEvents.length) seismic.textContent = `${state.seismicEvents.length} downloaded InSight catalog events; station is outside Gale and is context-only.`;
+}
+async function loadScienceLayers() {
+  try {
+    const [manifestResponse, seismicResponse] = await Promise.all([
+      fetch("data/science-layers.json"),
+      fetch("data/insight-seismic-catalog.json")
+    ]);
+    if (!manifestResponse.ok || !seismicResponse.ok) throw new Error("Science layer manifest unavailable");
+    state.scienceLayers = await manifestResponse.json();
+    state.seismicEvents = await seismicResponse.json();
+    renderScienceStatus();
+  } catch (error) {
+    console.warn("Science layer metadata unavailable.", error);
+  }
+}
 function drawRover(w, h) {
   if (!state.playing) return;
   const points = state.routeGeo.length ? state.routeGeo.map(point => geoToScreen(point.lon, point.lat, w, h)) : [{x:w*.17,y:h*.71},{x:w*.82,y:h*.25}];
@@ -494,4 +517,4 @@ async function loadNASAData() {
     console.warn("NASA local data unavailable; retaining deterministic simulation.", error);
   }
 }
-window.addEventListener("resize", resizeCanvas); renderWaypoints(); resizeCanvas(); loadNASAData(); loadMOLA();
+window.addEventListener("resize", resizeCanvas); renderWaypoints(); resizeCanvas(); loadNASAData(); loadMOLA(); loadScienceLayers();

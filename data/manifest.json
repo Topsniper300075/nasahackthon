@@ -3,6 +3,20 @@
   "purpose": "Local NASA data inputs for the Aurelia Mars Mission Console",
   "files": [
     {
+      "path": "science-layers.json",
+      "source": "Local provenance contract for MOLA, MSL weather, RAD, REMS, InSight SEIS, chemistry, and geology adapters",
+      "provider": "NASA/PDS mission archives",
+      "usedBy": "app.js:loadScienceLayers",
+      "use": "Tracks whether each layer is spatially valid for route costing or context only"
+    },
+    {
+      "path": "insight-seismic-catalog.json",
+      "source": "https://ds.iris.edu/ds/mars-events/v2/",
+      "provider": "NASA InSight SEIS archive / EarthScope SAGE mirror",
+      "usedBy": "app.js:loadScienceLayers",
+      "use": "Downloaded catalog context; not treated as Gale-local route hazard"
+    },
+    {
       "path": "mars-weather.json",
       "source": "https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json",
       "provider": "NASA Mars Science Laboratory",
