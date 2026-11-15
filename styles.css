@@ -138,3 +138,67 @@ select {
 .chart .line {
   stroke-width: 1.5;
 }
+
+details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
+  color: var(--muted);
+  font: 10px var(--mono);
+  letter-spacing: .07em;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details > summary::after {
+  content: "+";
+  color: var(--orange2);
+  font: 15px var(--sans);
+  line-height: 1;
+}
+
+details[open] > summary::after {
+  content: "−";
+}
+
+details > summary strong,
+details > summary .pulse,
+details > summary .count {
+  color: var(--orange2);
+  font: 10px var(--mono);
+  letter-spacing: .04em;
+}
+
+.control-section > summary {
+  margin-bottom: 0;
+}
+
+.control-section[open] > summary {
+  margin-bottom: 18px;
+}
+
+.insights > summary,
+.science-stack > summary,
+.decision-section > summary,
+.waypoints > summary,
+.science-goal > summary {
+  margin-bottom: 0;
+}
+
+.insights[open] > summary,
+.science-stack[open] > summary,
+.decision-section[open] > summary,
+.waypoints[open] > summary,
+.science-goal[open] > summary {
+  margin-bottom: 18px;
+}
+
+.topbar-note {
+  color: var(--muted);
+  font: 9px var(--mono);
+  letter-spacing: .06em;
+}

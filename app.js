@@ -444,7 +444,6 @@ function renderWaypoints() {
 document.querySelectorAll('input[type="range"]').forEach(input => input.addEventListener("input", e => { document.getElementById(`${e.target.id}Value`).textContent = `${e.target.value}%`; updateRoute(); }));
 document.querySelectorAll("[data-layer]").forEach(input => input.addEventListener("change", e => { hazards[e.target.dataset.layer] = e.target.checked; drawMars(); }));
 document.getElementById("routeButton").addEventListener("click", () => { const button = document.getElementById("routeButton"); button.innerHTML = "<span>✓</span> ROUTE UPDATED <b>⌘ ↵</b>"; updateRoute(); setTimeout(() => button.innerHTML = "<span>✦</span> GENERATE SAFEST ROUTE <b>⌘ ↵</b>", 1800); });
-document.getElementById("themeButton").addEventListener("click", () => document.body.classList.toggle("light"));
 document.getElementById("zoomIn").addEventListener("click", event => { event.stopPropagation(); state.zoom = Math.min(2.5, state.zoom + .15); drawMars(); drawTerrain(); drawProfile(); });
 document.getElementById("zoomOut").addEventListener("click", event => { event.stopPropagation(); state.zoom = Math.max(.65, state.zoom - .15); drawMars(); drawTerrain(); drawProfile(); });
 document.getElementById("recenter").addEventListener("click", event => { event.stopPropagation(); state.zoom = 1; state.pitch = 1; state.bearing = 0; state.offsetX = state.offsetY = 0; drawMars(); drawTerrain(); drawProfile(); });

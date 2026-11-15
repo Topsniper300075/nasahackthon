@@ -12,7 +12,7 @@
       <header class="topbar">
         <div class="brand"><span class="brand-mark">◒</span><span>AURELIA</span><small>MISSION CONSOLE</small></div>
         <div class="mission-state"><span class="status-dot"></span><span>FIELD PLANNING / DEMO</span><strong>GALE CRATER</strong></div>
-        <button class="icon-button" id="themeButton" aria-label="Toggle display contrast">◐</button>
+        <div class="topbar-note">LOCAL STUDY · MOLA TERRAIN</div>
       </header>
 
       <main class="workspace">
@@ -31,23 +31,23 @@
             </select>
           </section>
 
-          <section class="control-section">
-            <div class="section-title"><label>PLANNING PRIORITIES</label><span id="weightTotal">100%</span></div>
+          <details class="control-section" open>
+            <summary><span>PLANNING PRIORITIES</span><strong id="weightTotal">100%</strong></summary>
             <div class="slider-row"><span>Terrain</span><output id="terrainValue">30%</output><input id="terrain" type="range" min="0" max="60" value="30" /></div>
             <div class="slider-row"><span>Radiation</span><output id="radiationValue">25%</output><input id="radiation" type="range" min="0" max="60" value="25" /></div>
             <div class="slider-row"><span>Dust</span><output id="dustValue">20%</output><input id="dust" type="range" min="0" max="60" value="20" /></div>
             <div class="slider-row"><span>Seismic</span><output id="seismicValue">15%</output><input id="seismic" type="range" min="0" max="60" value="15" /></div>
             <div class="slider-row"><span>Distance</span><output id="distanceValue">10%</output><input id="distance" type="range" min="0" max="60" value="10" /></div>
             <p class="route-cost-note">Route cost uses terrain and distance only. Radiation, dust, and seismic layers are not yet registered to this grid.</p>
-          </section>
+          </details>
 
-          <section class="control-section">
-            <label>MAP LAYERS</label>
+          <details class="control-section">
+            <summary>MAP LAYERS</summary>
             <label class="toggle"><input type="checkbox" data-layer="terrain" checked /><span></span>Terrain weights + contours <i class="legend terrain"></i></label>
             <label class="toggle"><input type="checkbox" data-layer="radiation" checked /><span></span>Radiation exposure <i class="legend radiation"></i></label>
             <label class="toggle"><input type="checkbox" data-layer="dust" checked /><span></span>Dust activity <i class="legend dust"></i></label>
             <label class="toggle"><input type="checkbox" data-layer="seismic" /><span></span>Seismic history <i class="legend seismic"></i></label>
-          </section>
+          </details>
 
           <button class="primary-button" id="routeButton"><span>→</span> PLAN THIS TRAVERSE <b>⌘ ↵</b></button>
         </aside>
@@ -82,11 +82,11 @@
           <div class="route-header"><div><h2 id="routeName">Aurelia Traverse <span>●</span></h2><p id="routeStatus">OPTIMIZED FOR GEOLOGY</p></div><div class="risk-score"><strong id="riskScore">34</strong><small>RISK<br />INDEX</small></div></div>
           <div class="metrics-grid"><div><span>TRAVERSE</span><strong id="distanceMetric">18.6 <small>km</small></strong></div><div><span>EST. TIME</span><strong id="timeMetric">07:42 <small>h</small></strong></div><div><span>ASCENT</span><strong id="ascentMetric">+412 <small>m</small></strong></div><div><span>WAYPOINTS</span><strong id="waypointMetric">06</strong></div></div>
           <section class="chart-section"><div class="section-title"><label>ELEVATION PROFILE</label><span class="chart-legend"><i class="safe"></i> MOLA ROUTE <i class="threshold"></i> DIRECT LINE</span></div><div class="chart"><div class="threshold-line"><span>REFERENCE</span></div><svg id="riskChart" viewBox="0 0 360 112" preserveAspectRatio="none"><defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f07e4e" stop-opacity=".42"/><stop offset="1" stop-color="#f07e4e" stop-opacity="0"/></linearGradient></defs><path class="area" d="M0 92 L25 82 L52 88 L79 60 L105 68 L132 42 L160 56 L187 48 L214 72 L241 54 L268 62 L295 38 L322 52 L360 35 L360 112 L0 112Z"/><path class="line" d="M0 92 L25 82 L52 88 L79 60 L105 68 L132 42 L160 56 L187 48 L214 72 L241 54 L268 62 L295 38 L322 52 L360 35"/></svg><div class="chart-axis"><span>BASE</span><span>2.5 KM</span><span>5 KM</span><span>7.5 KM</span><span>FOOTHILL</span></div></div></section>
-          <section class="insights"><div class="section-title"><label>FIELD NOTES</label><span class="pulse">● REVIEWED</span></div><article><span class="insight-icon orange">↗</span><p><strong>Terrain route calculated</strong><br />The route trades a little distance for lower MOLA-derived local grade.</p></article><article><span class="insight-icon violet">◌</span><p><strong>Radiation remains unmodelled</strong><br />No dose claim is made because the available RAD record is not a spatial surface.</p></article><article><span class="insight-icon blue">≋</span><p><strong>Weather is station context</strong><br />The MSL feed helps describe conditions, not a live dust front across the route.</p></article></section>
-          <section class="science-stack"><div class="section-title"><label>SCIENCE DATA STATUS</label><span class="pulse">● PROVENANCE</span></div><div id="scienceDataStatus"><div class="science-status-loading">LOADING LOCAL ADAPTERS...</div></div><img id="hirisePreview" class="hirise-preview" alt="HiRISE Gale crater DTM color-altimetry browse context" /><p class="science-caption">HiRISE DTM browse / Gale central mound. Context-only until numeric DTM registration.</p><p id="seismicNote">InSight seismic catalog is loaded as global Mars context only.</p></section>
-          <section class="decision-section"><div class="section-title"><label>WHY THIS PATH</label><span class="pulse">● TRACEABLE</span></div><div id="decisionList"></div></section>
-          <section class="waypoints"><div class="section-title"><label>WAYPOINTS <span class="count">06</span></label><button id="toggleWaypoints">VIEW ALL</button></div><div id="waypointList"></div></section>
-          <section class="science-goal"><div class="section-title"><label>SCIENCE GOAL</label><span class="pulse">● PRIORITIZED</span></div><div class="goal-card"><span class="goal-icon">⌁</span><div><strong id="goalTitle">Layered geology transect</strong><p id="goalCopy">Sample contacts between the Murray and Stimson formations while preserving astronaut energy.</p></div></div></section>
+          <details class="insights" open><summary>FIELD NOTES <span class="pulse">● REVIEWED</span></summary><article><span class="insight-icon orange">↗</span><p><strong>Terrain route calculated</strong><br />The route trades a little distance for lower MOLA-derived local grade.</p></article><article><span class="insight-icon violet">◌</span><p><strong>Radiation remains unmodelled</strong><br />No dose claim is made because the available RAD record is not a spatial surface.</p></article><article><span class="insight-icon blue">≋</span><p><strong>Weather is station context</strong><br />The MSL feed helps describe conditions, not a live dust front across the route.</p></article></details>
+          <details class="science-stack"><summary>SCIENCE DATA STATUS <span class="pulse">● PROVENANCE</span></summary><div id="scienceDataStatus"><div class="science-status-loading">LOADING LOCAL ADAPTERS...</div></div><img id="hirisePreview" class="hirise-preview" alt="HiRISE Gale crater DTM color-altimetry browse context" /><p class="science-caption">HiRISE DTM browse / Gale central mound. Context-only until numeric DTM registration.</p><p id="seismicNote">InSight seismic catalog is loaded as global Mars context only.</p></details>
+          <details class="decision-section"><summary>WHY THIS PATH <span class="pulse">● TRACEABLE</span></summary><div id="decisionList"></div></details>
+          <details class="waypoints"><summary>WAYPOINTS <span class="count">06</span></summary><div id="waypointList"></div></details>
+          <details class="science-goal"><summary>SCIENCE GOAL <span class="pulse">● PRIORITIZED</span></summary><div class="goal-card"><span class="goal-icon">⌁</span><div><strong id="goalTitle">Layered geology transect</strong><p id="goalCopy">Sample contacts between the Murray and Stimson formations while preserving astronaut energy.</p></div></div></details>
           <button class="secondary-button" id="exportButton">↓ &nbsp; EXPORT MISSION BRIEF</button>
         </aside>
       </main>
