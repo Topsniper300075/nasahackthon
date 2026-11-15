@@ -5,6 +5,7 @@ const profileCanvas = document.getElementById("profileCanvas");
 const profileCtx = profileCanvas.getContext("2d");
 const mapWrap = document.querySelector(".map-wrap");
 const state = { zoom: 1, offsetX: 0, offsetY: 0, seed: 8, route: [], nasaWeather: null, nasaImage: null, pitch: 1, bearing: 0, playing: false, progress: 0, molaReady: false, mola: null, molaGrid: null, routeGeo: [], weightMatrix: null, routeCost: 0 };
+const missionEndpoints = { start: { lon: 137.25, lat: -5.65 }, goal: { lon: 137.85, lat: -5.08 } };
 const waypoints = [
   ["Aurelia Base", "0.0 km", "LOW", false], ["Delta Ridge", "2.8 km", "LOW", false],
   ["Strata Point", "5.4 km", "MODERATE", false], ["Murray Buttes", "8.9 km", "LOW", false],
@@ -101,17 +102,21 @@ function loadMOLA() {
       const col = Math.max(0, Math.min(cols - 1, Math.round(lon * 16)));
       return data.getInt16((row * cols + col) * 2, false);
     };
+    const colsLocal = Math.floor((lon1 - lon0) / step) + 1;
+    const rowsLocal = Math.floor((lat1 - lat0) / step) + 1;
     const points = [];
-    for (let lat = lat0; lat <= lat1 + step; lat += step) for (let lon = lon0; lon <= lon1 + step; lon += step) points.push({ lat, lon, elev: sample(lat, lon) });
-    const colsLocal = Math.round((lon1-lon0)/step)+1;
-    state.molaGrid = { points, cols: colsLocal, rows: Math.floor(points.length / colsLocal), lon0, lon1, lat0, lat1, step };
+    for (let y = 0; y < rowsLocal; y++) for (let x = 0; x < colsLocal; x++) {
+      const lat = lat0 + y * step, lon = lon0 + x * step;
+      points.push({ lat, lon, elev: sample(lat, lon) });
+    }
+    state.molaGrid = { points, cols: colsLocal, rows: rowsLocal, lon0, lon1: lon0 + (colsLocal - 1) * step, lat0, lat1: lat0 + (rowsLocal - 1) * step, step };
     buildWeightMatrix(state.molaGrid);
     state.routeGeo = planRoute(state.molaGrid);
     updateRouteProfile();
     updateGeographicLabels();
     const height = p => Math.max(-.12, Math.min(.25, p.elev / 9000));
     const color = p => { const n = Math.max(0, Math.min(1, (p.elev + 3000) / 8500)); return [.25 + n*.45, .11 + n*.24, .07 + n*.15]; };
-    for (let y=0; y<colsLocal-1; y++) for (let x=0; x<Math.floor(points.length/colsLocal)-1; x++) {
+    for (let y = 0; y < rowsLocal - 1; y++) for (let x = 0; x < colsLocal - 1; x++) {
       const a=points[y*colsLocal+x], b=points[y*colsLocal+x+1], c=points[(y+1)*colsLocal+x], d=points[(y+1)*colsLocal+x+1];
       [[a,b,c],[b,d,c]].forEach(triangle => triangle.forEach(p => { positions.push((p.lon-137.5)/3.5, height(p), (p.lat+5.5)/3.5); colors.push(...color(p)); }));
     }
@@ -120,7 +125,7 @@ function loadMOLA() {
     terrainGL.bindBuffer(terrainGL.ARRAY_BUFFER, colorBuffer); terrainGL.bufferData(terrainGL.ARRAY_BUFFER, new Float32Array(colors), terrainGL.STATIC_DRAW);
     state.mola={positionBuffer,colorBuffer}; terrainCount=positions.length/3; state.molaReady=true;
     document.querySelector(".map-footer span:first-child").innerHTML='<i class="live-dot"></i> MOLA 16 PPD ELEVATION';
-    document.querySelector(".map-footer span:nth-child(2) b").textContent="~463 M/CELL";
+    document.querySelector(".map-footer span:nth-child(2) b").textContent=`~${marsDistanceKm({ lat: lat0, lon: lon0 }, { lat: lat0, lon: lon0 + step }).toFixed(1)} KM/CELL`;
     drawMars(); resizeTerrain();
   }).catch(error => console.warn("MOLA terrain unavailable; retaining imagery mode.", error));
 }
@@ -215,16 +220,38 @@ function drawHazardZones(w, h) {
     ctx.fillStyle="#f08a91"; ctx.font="9px DM Mono, monospace"; ctx.fillText(zone.label,p.x-rx*.7,p.y-ry-6); ctx.restore();
   });
 }
+function marsDistanceKm(a, b) {
+  const radiusKm = 3389.5;
+  const lat1 = a.lat * Math.PI / 180, lat2 = b.lat * Math.PI / 180;
+  const dLat = (b.lat - a.lat) * Math.PI / 180, dLon = (b.lon - a.lon) * Math.PI / 180;
+  const sinLat = Math.sin(dLat / 2), sinLon = Math.sin(dLon / 2);
+  const haversine = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLon * sinLon;
+  return 2 * radiusKm * Math.asin(Math.sqrt(Math.min(1, haversine)));
+}
+function distanceToMissionCorridorKm(point, start, goal) {
+  const radiusKm = 3389.5, meanLat = (start.lat + goal.lat) * Math.PI / 360;
+  const project = sample => ({
+    x: sample.lon * Math.PI / 180 * Math.cos(meanLat) * radiusKm,
+    y: sample.lat * Math.PI / 180 * radiusKm
+  });
+  const p = project(point), a = project(start), b = project(goal);
+  const dx = b.x - a.x, dy = b.y - a.y, lengthSquared = dx * dx + dy * dy;
+  if (!lengthSquared) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lengthSquared));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
 function geoToScreen(lon, lat, w, h) {
   const grid = state.molaGrid || { lon0: 134, lon1: 141, lat0: -9, lat1: -2 };
   return { x: (lon - grid.lon0) / (grid.lon1 - grid.lon0) * w, y: (grid.lat1 - lat) / (grid.lat1 - grid.lat0) * h };
 }
 function updateGeographicLabels() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
-  const base = geoToScreen(137.25, -5.65, w, h), goal = geoToScreen(138.05, -4.85, w, h);
+  const base = geoToScreen(missionEndpoints.start.lon, missionEndpoints.start.lat, w, h), goal = geoToScreen(missionEndpoints.goal.lon, missionEndpoints.goal.lat, w, h);
   const baseLabel = document.querySelector(".label-base"), sharpLabel = document.querySelector(".label-sharp");
   baseLabel.style.left = `${base.x + 12}px`; baseLabel.style.bottom = "auto"; baseLabel.style.top = `${base.y + 12}px`;
   sharpLabel.style.left = `${goal.x + 12}px`; sharpLabel.style.top = `${goal.y - 20}px`;
+  const goalPoint = state.routeGeo.at(-1);
+  if (goalPoint) sharpLabel.querySelector("small").textContent = `MOLA ${goalPoint.elev.toLocaleString()} m areoid`;
 }
 function drawElevationContours(w, h) {
   const grid = state.molaGrid;
@@ -256,16 +283,16 @@ function getRiskWeights() {
 }
 function buildWeightMatrix(grid) {
   const matrix = new Float32Array(grid.points.length);
-  const cellDistanceKm = grid.step * 59.2;
   for (let y = 0; y < grid.rows; y++) for (let x = 0; x < grid.cols; x++) {
     const index = y * grid.cols + x, point = grid.points[index];
     const neighbors = [];
     [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].forEach(([nx, ny]) => {
       if (nx >= 0 && ny >= 0 && nx < grid.cols && ny < grid.rows) neighbors.push(grid.points[ny * grid.cols + nx]);
     });
-    const maxSlope = neighbors.reduce((max, neighbor) => Math.max(max, Math.abs(neighbor.elev - point.elev) / cellDistanceKm), 0);
-    point.slope = maxSlope;
-    point.traversalWeight = Math.min(1, maxSlope / 35);
+    const maxSlopePercent = neighbors.reduce((max, neighbor) => Math.max(max, Math.abs(neighbor.elev - point.elev) / (marsDistanceKm(point, neighbor) * 1000) * 100), 0);
+    const slopePercent = maxSlopePercent;
+    point.slopePercent = slopePercent;
+    point.traversalWeight = Math.min(1, slopePercent / 35);
     matrix[index] = point.traversalWeight;
   }
   state.weightMatrix = matrix;
@@ -287,14 +314,14 @@ function drawWeightMatrix(w, h) {
   ctx.restore();
 }
 function planRoute(grid) {
-  const start = { lon: 137.25, lat: -5.65 }, goal = { lon: 138.05, lat: -4.85 };
+  const start = missionEndpoints.start, goal = missionEndpoints.goal;
   const nearest = target => grid.points.reduce((best,p,i) => {
     const score = (p.lon-target.lon)**2 + (p.lat-target.lat)**2;
     return score < best.score ? { index:i, score } : best;
   }, { index:0, score:Infinity }).index;
   const startIndex=nearest(start), goalIndex=nearest(goal), open=[startIndex], came=new Map(), g=new Map([[startIndex,0]]);
   const riskWeights = getRiskWeights();
-  const heuristic = i => { const p=grid.points[i], q=grid.points[goalIndex]; return Math.hypot(p.lon-q.lon,p.lat-q.lat) * (1 + riskWeights.distance); };
+  const heuristic = i => marsDistanceKm(grid.points[i], grid.points[goalIndex]) * (1 + riskWeights.distance);
   const rows=grid.rows, cols=grid.cols;
   while (open.length) {
     open.sort((a,b)=>(g.get(a)+heuristic(a))-(g.get(b)+heuristic(b)));
@@ -302,15 +329,15 @@ function planRoute(grid) {
     const x=current%cols,y=Math.floor(current/cols), here=grid.points[current];
     [[x-1,y],[x+1,y],[x,y-1],[x,y+1]].forEach(([nx,ny]) => {
       if(nx<0||ny<0||nx>=cols||ny>=rows)return;
-      const ni=ny*cols+nx, next=grid.points[ni], slope=Math.abs(next.elev-here.elev);
+      const ni=ny*cols+nx, next=grid.points[ni];
       const minLon=Math.min(start.lon,goal.lon)-.35, maxLon=Math.max(start.lon,goal.lon)+.35;
       const minLat=Math.min(start.lat,goal.lat)-.35, maxLat=Math.max(start.lat,goal.lat)+.35;
       if(next.lon<minLon||next.lon>maxLon||next.lat<minLat||next.lat>maxLat)return;
-      const corridor = Math.abs((next.lon-start.lon)*(goal.lat-start.lat)-(next.lat-start.lat)*(goal.lon-start.lon));
-      const stepKm = Math.hypot(next.lon-here.lon, next.lat-here.lat) * 59.2;
-      const slopeWeight = next.traversalWeight ?? Math.min(1, slope / 35);
+      const corridor = distanceToMissionCorridorKm(next, start, goal);
+      const stepKm = marsDistanceKm(here, next);
+      const slopeWeight = next.traversalWeight ?? 0;
       const traversalMultiplier = 1 + riskWeights.terrain * slopeWeight * 8 + riskWeights.distance;
-      const tentative=(g.get(current)||0)+stepKm * traversalMultiplier + corridor * .35;
+      const tentative=(g.get(current)||0)+stepKm * traversalMultiplier + corridor * .05;
       if(tentative < (g.get(ni) ?? Infinity)){came.set(ni,current);g.set(ni,tentative);if(!open.includes(ni))open.push(ni);}
     });
   }
@@ -326,7 +353,7 @@ function planRoute(grid) {
     const t = step / 42, targetLon = start.lon + (goal.lon - start.lon) * t, targetLat = start.lat + (goal.lat - start.lat) * t;
     const candidates = grid.points.filter(point => Math.hypot(point.lon-targetLon, point.lat-targetLat) < .16);
     candidates.sort((a,b) => {
-      const score = point => Math.hypot(point.lon-targetLon, point.lat-targetLat) + Math.abs(point.elev-previous.elev)/18000 + Math.max(0, point.elev)/180000;
+      const score = point => Math.hypot(point.lon-targetLon, point.lat-targetLat) + (point.traversalWeight || 0) * .08 + Math.max(0, point.elev)/180000;
       return score(a)-score(b);
     });
     const next = candidates[0] || grid.points[Math.round(startIndex + (goalIndex-startIndex)*t)];
@@ -352,11 +379,12 @@ function updateRouteProfile() {
   document.getElementById("ascentMetric").innerHTML = `+${Math.round(ascent)} <small>m</small>`;
   document.querySelector(".chart-section .section-title label").textContent = "ELEVATION PROFILE";
   document.querySelector(".chart-legend").innerHTML = '<i class="safe"></i> MOLA ROUTE <i class="threshold"></i> RELIEF';
-  const directDistance = Math.hypot(state.routeGeo[0].lon-state.routeGeo.at(-1).lon, state.routeGeo[0].lat-state.routeGeo.at(-1).lat) * 59.2;
-  const routeDistance = state.routeGeo.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.lon-state.routeGeo[index].lon, point.lat-state.routeGeo[index].lat) * 59.2, 0);
+  const directDistance = marsDistanceKm(state.routeGeo[0], state.routeGeo.at(-1));
+  const routeDistance = state.routeGeo.slice(1).reduce((sum, point, index) => sum + marsDistanceKm(state.routeGeo[index], point), 0);
+  document.getElementById("distanceMetric").innerHTML = `${routeDistance.toFixed(1)} <small>km</small>`;
   const detour = Math.max(0, routeDistance / Math.max(1, directDistance) - 1) * 100;
   document.getElementById("decisionList").innerHTML = [
-    ["↗", "Terrain relief", `Weighted grid penalizes cells up to ${Math.round(Math.max(...state.routeGeo.map(point => point.slope || 0)))}% local grade`, "MOLA"],
+    ["↗", "Terrain relief", `Weighted grid penalizes cells up to ${Math.round(Math.max(...state.routeGeo.map(point => point.slopePercent || 0)))}% local grade`, "MOLA"],
     ["⌁", "Energy trade-off", `${detour.toFixed(0)}% longer than direct line to reduce slope cost`, `${routeDistance.toFixed(1)} km`],
     ["◌", "Route evidence", "Dashed line is direct; orange line is the computed corridor", "TRACEABLE"]
   ].map(([icon,title,copy,value], index) => `<div class="decision-row"><i class="decision-icon">${icon}</i><div><strong>${title}</strong><span>${copy}</span></div><span class="decision-value">${value}</span><div class="decision-bar"><i style="width:${[82, Math.min(95, 35+detour*2), 100][index]}%"></i></div></div>`).join("");
@@ -379,7 +407,7 @@ function updateRoute() {
   document.getElementById("weightTotal").textContent = `${Math.round(total)}%`;
   const score = Math.round(25 + weights[0] * .18 + weights[1] * .14 + weights[2] * .11 + weights[3] * .1);
   document.getElementById("riskScore").textContent = score;
-  document.getElementById("distanceMetric").innerHTML = `${(18.6 + (weights[0]-30)*.04).toFixed(1)} <small>km</small>`;
+  document.getElementById("distanceMetric").innerHTML = state.routeGeo.length > 1 ? `${state.routeGeo.slice(1).reduce((sum, point, index) => sum + marsDistanceKm(state.routeGeo[index], point), 0).toFixed(1)} <small>km</small>` : "— <small>km</small>";
   document.getElementById("timeMetric").innerHTML = `0${7 + Math.floor(score/35)}:${String(42 + score % 18).padStart(2,"0")} <small>h</small>`;
   if (state.molaGrid) {
     state.routeGeo = planRoute(state.molaGrid);

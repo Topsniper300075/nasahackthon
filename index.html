@@ -22,7 +22,7 @@
         <aside class="sidebar left-panel">
           <div class="eyebrow">01 / MISSION PROFILE</div>
           <h1>Find the<br /><em>safer path.</em></h1>
-          <p class="intro">Plan traverses across Mars by balancing terrain, radiation, dust and seismic risk against your scientific priorities.</p>
+          <p class="intro">Plan a Mars traverse with MOLA terrain costs and distance constraints. Radiation, dust and seismic controls remain scenario inputs until georeferenced products are loaded.</p>
 
           <section class="control-section">
             <label for="objective">PRIMARY OBJECTIVE</label>
@@ -35,7 +35,7 @@
           </section>
 
           <section class="control-section">
-            <div class="section-title"><label>RISK WEIGHTS</label><span id="weightTotal">100%</span></div>
+            <div class="section-title"><label>SCENARIO WEIGHTS</label><span id="weightTotal">100%</span></div>
             <div class="slider-row"><span>Terrain</span><output id="terrainValue">30%</output><input id="terrain" type="range" min="0" max="60" value="30" /></div>
             <div class="slider-row"><span>Radiation</span><output id="radiationValue">25%</output><input id="radiation" type="range" min="0" max="60" value="25" /></div>
             <div class="slider-row"><span>Dust</span><output id="dustValue">20%</output><input id="dust" type="range" min="0" max="60" value="20" /></div>
@@ -66,7 +66,7 @@
             <div class="map-grid"></div>
             <div class="map-vignette"></div>
             <div class="map-label label-gale"><span>GALE CRATER</span><small>⊙ 137.4° E / 5.4° S</small></div>
-            <div class="map-label label-sharp"><span>MOUNT SHARP</span><small>4,501 m elevation</small></div>
+            <div class="map-label label-sharp"><span>MOUNT SHARP / AEOLIS MONS</span><small>MOLA AREOID ELEVATION</small></div>
             <div class="map-label label-base"><span>◉ AURELIA BASE</span><small>SAFE ZONE / 12 SOLS</small></div>
             <div class="map-legend-overlay"><span><i class="safe-zone"></i> PLANNED ROUTE</span><span><i class="danger-zone"></i> HIGH-COST CELL</span><span><i class="direct-line"></i> DIRECT LINE</span></div>
             <div class="north-arrow">N<br /><span>↑</span></div>
@@ -76,7 +76,7 @@
             <div class="route-start pin"><span>BASE</span></div>
             <div class="route-end pin"><span>GOAL</span></div>
           </div>
-          <div class="map-footer"><span><i class="live-dot"></i> NASA SURFACE / 2.5D PROJECTION</span><span>RESOLUTION <b>LOCAL ASSET</b></span><span>DATA EPOCH <b>MSOL 018</b></span><button class="data-button" id="dataButton">ⓘ DATA PROVENANCE</button></div>
+          <div class="map-footer"><span><i class="live-dot"></i> NASA SURFACE / 2.5D PROJECTION</span><span>RESOLUTION <b>MOLA RESAMPLED 0.12°</b></span><span>DATA EPOCH <b>MSOL 018</b></span><button class="data-button" id="dataButton">ⓘ DATA PROVENANCE</button></div>
         </section>
 
         <aside class="sidebar right-panel">
@@ -84,7 +84,7 @@
           <div class="route-header"><div><h2 id="routeName">Aurelia Traverse <span>●</span></h2><p id="routeStatus">OPTIMIZED FOR GEOLOGY</p></div><div class="risk-score"><strong id="riskScore">34</strong><small>RISK<br />INDEX</small></div></div>
           <div class="metrics-grid"><div><span>TRAVERSE</span><strong id="distanceMetric">18.6 <small>km</small></strong></div><div><span>EST. TIME</span><strong id="timeMetric">07:42 <small>h</small></strong></div><div><span>ASCENT</span><strong id="ascentMetric">+412 <small>m</small></strong></div><div><span>WAYPOINTS</span><strong id="waypointMetric">06</strong></div></div>
           <section class="chart-section"><div class="section-title"><label>RISK PROFILE</label><span class="chart-legend"><i class="safe"></i> ROUTE <i class="threshold"></i> LIMIT</span></div><div class="chart"><div class="threshold-line"><span>MAX 60</span></div><svg id="riskChart" viewBox="0 0 360 112" preserveAspectRatio="none"><defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f07e4e" stop-opacity=".42"/><stop offset="1" stop-color="#f07e4e" stop-opacity="0"/></linearGradient></defs><path class="area" d="M0 92 L25 82 L52 88 L79 60 L105 68 L132 42 L160 56 L187 48 L214 72 L241 54 L268 62 L295 38 L322 52 L360 35 L360 112 L0 112Z"/><path class="line" d="M0 92 L25 82 L52 88 L79 60 L105 68 L132 42 L160 56 L187 48 L214 72 L241 54 L268 62 L295 38 L322 52 L360 35"/></svg><div class="chart-axis"><span>BASE</span><span>2.5 KM</span><span>5 KM</span><span>7.5 KM</span><span>GOAL</span></div></div></section>
-          <section class="insights"><div class="section-title"><label>MISSION INSIGHTS</label><span class="pulse">● ANALYSIS READY</span></div><article><span class="insight-icon orange">↗</span><p><strong>Low-gradient corridor found</strong><br />Route avoids the steep northern rim, saving <em>18% energy</em> versus a direct traverse.</p></article><article><span class="insight-icon violet">◌</span><p><strong>Radiation window favorable</strong><br />Current route stays below <em>0.42 mSv/hr</em> for 94% of the journey.</p></article><article><span class="insight-icon blue">≋</span><p><strong>Dust front 42 km east</strong><br />No immediate impact. Next forecast update in <em>2h 18m.</em></p></article></section>
+          <section class="insights"><div class="section-title"><label>MISSION INSIGHTS</label><span class="pulse">● ANALYSIS READY</span></div><article><span class="insight-icon orange">↗</span><p><strong>MOLA corridor calculated</strong><br />The orange route minimizes modeled terrain traversal cost within the selected corridor.</p></article><article><span class="insight-icon violet">◌</span><p><strong>Radiation layer pending</strong><br />No georeferenced radiation product is bundled, so no dose claim is made in the route cost.</p></article><article><span class="insight-icon blue">≋</span><p><strong>Atmospheric context loaded</strong><br />NASA weather JSON is available for context; it is not yet a spatial dust forecast.</p></article></section>
           <section class="decision-section"><div class="section-title"><label>WHY THIS PATH</label><span class="pulse">● TRACEABLE</span></div><div id="decisionList"></div></section>
           <section class="waypoints"><div class="section-title"><label>WAYPOINTS <span class="count">06</span></label><button id="toggleWaypoints">VIEW ALL</button></div><div id="waypointList"></div></section>
           <section class="science-goal"><div class="section-title"><label>SCIENCE GOAL</label><span class="pulse">● PRIORITIZED</span></div><div class="goal-card"><span class="goal-icon">⌁</span><div><strong id="goalTitle">Layered geology transect</strong><p id="goalCopy">Sample contacts between the Murray and Stimson formations while preserving astronaut energy.</p></div></div></section>
