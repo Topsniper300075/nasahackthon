@@ -46,6 +46,29 @@ The map also shows the direct-line comparison and hazard zones. “WHY THIS PATH
 
 The local science adapter contract is in `data/science-layers.json`. It records the actual NASA/PDS product intended for each theme, whether it is active, context-only, or planned, and whether it is allowed to affect route cost. The downloaded HiRISE color-altimetry browse derivative is included as high-resolution Gale context; it is explicitly context-only and is not treated as a registered numeric DTM. The underlying official DTM is approximately 833 MB, has a local footprint centered near 137.3°E, 4.61°S, and requires PDS projection/label handling plus a compact crop before it can be used numerically. The downloaded InSight catalog is shown as global seismic context only because the InSight station is in Elysium Planitia, not Gale Crater. Radiation (MSL RAD), atmospheric dust (REMS/Mars Climate Database), chemistry (APXS/ChemCam/CheMin/SAM), and orbital geology (CRISM/USGS) require product-specific spatial extraction before they can safely become route-cost rasters or obstacle masks.
 
+## Python / Jupyter handoff
+
+`mola_route_planner.py` is a notebook-friendly implementation of the active route model. It uses only Python's standard library and the bundled MOLA binary, so no package installation is required. It decodes the signed big-endian MOLA values, creates the same 0.12° Gale grid, calculates four-neighbor grade weights, and runs connected 4-neighbor A*. It exports a JSON route artifact with coordinates, elevations, weights, cost, and provenance.
+
+From the repository root:
+
+```bash
+python mola_route_planner.py --output mola-route.json
+```
+
+In Jupyter:
+
+```python
+from pathlib import Path
+from mola_route_planner import build_weight_matrix, load_mola_grid, plan_route
+
+grid = load_mola_grid(Path("data/mola/mola-topography-16ppd.img"))
+weights = build_weight_matrix(grid)
+route, cost = plan_route(grid, terrain_weight=30, distance_weight=10)
+```
+
+The Python module is intentionally limited to MOLA terrain and distance as active route costs. The other science layers remain context-only or planned until their official products are spatially registered and their uncertainties are modeled.
+
 MOLA, SHARAD, USGS geology, THEMIS, and InSight seismic products are linked and identified in the provenance drawer but are not bundled yet because the official archives are large or require a product-specific query/coordinate selection. The next production step is to download a small, region-specific extract for each and add it to the same loader contract.
 
 ## NASA challenge alignment
