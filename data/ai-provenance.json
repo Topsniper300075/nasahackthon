@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.0",
+  "project": "Aurelia Mars Mission Console",
+  "disclosureDate": "2026-11-15",
+  "assistance": {
+    "used": true,
+    "system": "GitHub Copilot using Copilot SDK in VS Code",
+    "role": "Engineering, documentation, provenance, and review assistance",
+    "notAReplacementFor": [
+      "Team creative direction",
+      "Team scientific judgment",
+      "Human source verification",
+      "Human acceptance of final code and results"
+    ]
+  },
+  "aiAssistedActivities": [
+    "Brief decomposition and implementation planning",
+    "JavaScript and Python scaffolding and refinement",
+    "MOLA decoder, coordinate, slope, weight, and A* consistency review",
+    "Browser/Python parity review",
+    "Documentation and citation drafting",
+    "Validation workflow and error analysis"
+  ],
+  "humanOwnedDecisions": [
+    "Selecting Gale Crater and the lower Mount Sharp foothill demonstrator",
+    "Selecting and verifying NASA/PDS data products",
+    "Defining active versus context-only science layers",
+    "Choosing the 35 percent terrain-grade cap",
+    "Choosing connected four-neighbor movement",
+    "Reviewing and accepting the final implementation and claims"
+  ],
+  "dataIntegrity": {
+    "nasaMeasurementsGeneratedByAi": false,
+    "sourceFilesModifiedToCreateMeasurements": false,
+    "bundledScienceData": [
+      "data/mola/mola-topography-16ppd.img",
+      "data/mola/mola-topography-16ppd.xml",
+      "data/mars-weather.json",
+      "data/curiosity-martian-surface.jpg",
+      "data/hirise-gale-dtm-color-altimetry.jpg",
+      "data/insight-seismic-catalog.json"
+    ],
+    "derivedProducts": [
+      "Gale-region resampled MOLA grid",
+      "MOLA-derived slope and traversal weights",
+      "A* route and elevation profile"
+    ]
+  },
+  "review": {
+    "sourceOfTruth": [
+      "app.js",
+      "mola_route_planner.py",
+      "README.md",
+      "SOURCES.md",
+      "data/manifest.json",
+      "data/science-layers.json"
+    ],
+    "humanReviewRequired": true,
+    "claimsMustBeTraceableToSources": true
+  }
+}

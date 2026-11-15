@@ -1,6 +1,7 @@
 {
   "generated": "2026-11-14",
   "purpose": "Local NASA data inputs for the Aurelia Mars Mission Console",
+  "aiDisclosure": "ai-provenance.json",
   "files": [
     {
       "path": "science-layers.json",

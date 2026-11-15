@@ -4,6 +4,9 @@ A polished, responsive prototype for the 2026 NASA Space Apps Challenge. The con
 
 For a consolidated citation list covering every bundled data file, official
 source, planned adapter, and derived calculation, see [`SOURCES.md`](SOURCES.md).
+Generative-AI use, human contribution, and data-integrity safeguards are
+disclosed in [`AI_USAGE.md`](AI_USAGE.md) and
+[`data/ai-provenance.json`](data/ai-provenance.json).
 
 ## Run locally
 
