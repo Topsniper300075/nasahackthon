@@ -22,3 +22,119 @@
 .viewport-hint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);padding:7px 10px;background:rgba(12,10,10,.62);color:#c6a083;font:8px var(--mono);letter-spacing:.08em;pointer-events:none}
 .toolbar-actions .tool[data-view]{min-width:74px}
 .toolbar-actions .tool[data-view].active{color:var(--orange2);background:#292021}
+
+/* Deliberately restrained field-notebook treatment: fewer dashboard defaults,
+   clearer hierarchy, and no dependency on remote display fonts. */
+:root {
+  --bg: #11100e;
+  --panel: #191816;
+  --panel2: #211f1b;
+  --line: #39332b;
+  --muted: #a59a8b;
+  --text: #eee8dd;
+  --orange: #d4774f;
+  --orange2: #e6a06b;
+  --blue: #8ea9c2;
+  --green: #9ab88d;
+  --violet: #b19bbd;
+  --mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  --sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: #11100e;
+  font-family: var(--sans);
+  letter-spacing: 0;
+}
+
+h1, h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: -.025em;
+}
+
+h1 {
+  font-size: 36px;
+  font-weight: 500;
+}
+
+.brand {
+  letter-spacing: .12em;
+  font-weight: 600;
+}
+
+.brand-mark {
+  font-size: 22px;
+}
+
+.eyebrow, label, .section-title, .mission-state, .map-label,
+.map-footer, .data-button, .tool, .crumbs, .coordinates, .viewport-hint,
+.route-header p, .metrics-grid span, .chart-axis, .route-cost-note {
+  font-family: var(--mono);
+}
+
+.eyebrow, label, .section-title {
+  letter-spacing: .07em;
+}
+
+.intro, .insights article p, .goal-card p, .science-stack p {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+}
+
+.intro {
+  color: #c2b9aa;
+  line-height: 1.65;
+}
+
+select, .primary-button, .secondary-button {
+  border-radius: 2px;
+}
+
+select {
+  background: #211f1b;
+  border-color: #51483d;
+}
+
+.primary-button {
+  background: #d4774f;
+  border-color: #d4774f;
+  letter-spacing: .035em;
+}
+
+.primary-button:hover {
+  background: #e39464;
+}
+
+.map-stage, .map-toolbar, .map-footer {
+  background: #1b1815;
+}
+
+.map-wrap {
+  background: #63402f;
+}
+
+.map-grid {
+  opacity: .28;
+  background-size: 120px 120px;
+}
+
+.map-vignette {
+  box-shadow: inset 0 0 75px 25px rgba(20, 13, 9, .38);
+}
+
+.map-label {
+  letter-spacing: .04em;
+}
+
+.route-header p, .pulse {
+  letter-spacing: .06em;
+}
+
+.risk-score strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+}
+
+.chart .line {
+  stroke-width: 1.5;
+}
