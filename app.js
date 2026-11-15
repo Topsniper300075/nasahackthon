@@ -4,7 +4,7 @@ const terrainCanvas = document.getElementById("terrainCanvas");
 const profileCanvas = document.getElementById("profileCanvas");
 const profileCtx = profileCanvas.getContext("2d");
 const mapWrap = document.querySelector(".map-wrap");
-const state = { zoom: 1, offsetX: 0, offsetY: 0, seed: 8, route: [], nasaWeather: null, nasaImage: null, scienceLayers: null, seismicEvents: [], pitch: 1, bearing: 0, playing: false, progress: 0, molaReady: false, mola: null, molaGrid: null, routeGeo: [], weightMatrix: null, routeCost: 0 };
+const state = { zoom: 1, offsetX: 0, offsetY: 0, seed: 8, route: [], nasaWeather: null, nasaImage: null, hiriseImage: null, scienceLayers: null, seismicEvents: [], pitch: 1, bearing: 0, playing: false, progress: 0, molaReady: false, mola: null, molaGrid: null, routeGeo: [], weightMatrix: null, routeCost: 0 };
 const missionEndpoints = { start: { lon: 137.25, lat: -5.65 }, goal: { lon: 137.85, lat: -5.08 } };
 const waypoints = [
   ["Aurelia Base", "0.0 km", "LOW", false], ["Delta Ridge", "2.8 km", "LOW", false],
@@ -114,6 +114,7 @@ function loadMOLA() {
     state.routeGeo = planRoute(state.molaGrid);
     updateRouteProfile();
     updateGeographicLabels();
+    renderWaypoints();
     const height = p => Math.max(-.12, Math.min(.25, p.elev / 9000));
     const color = p => { const n = Math.max(0, Math.min(1, (p.elev + 3000) / 8500)); return [.25 + n*.45, .11 + n*.24, .07 + n*.15]; };
     for (let y = 0; y < rowsLocal - 1; y++) for (let x = 0; x < colsLocal - 1; x++) {
@@ -348,21 +349,8 @@ function planRoute(grid) {
     state.routeCost = g.get(goalIndex) || 0;
     return path;
   }
-  const fallback = [grid.points[startIndex]];
-  let previous = grid.points[startIndex];
-  for (let step = 1; step < 42; step++) {
-    const t = step / 42, targetLon = start.lon + (goal.lon - start.lon) * t, targetLat = start.lat + (goal.lat - start.lat) * t;
-    const candidates = grid.points.filter(point => Math.hypot(point.lon-targetLon, point.lat-targetLat) < .16);
-    candidates.sort((a,b) => {
-      const score = point => Math.hypot(point.lon-targetLon, point.lat-targetLat) + (point.traversalWeight || 0) * .08 + Math.max(0, point.elev)/180000;
-      return score(a)-score(b);
-    });
-    const next = candidates[0] || grid.points[Math.round(startIndex + (goalIndex-startIndex)*t)];
-    if (next && next !== previous) { fallback.push(next); previous = next; }
-  }
-  fallback.push(grid.points[goalIndex]);
-  state.routeCost = g.get(goalIndex) || 0;
-  return fallback;
+  state.routeCost = Infinity;
+  return [];
 }
 function updateRouteProfile() {
   if (!state.routeGeo.length) return;
@@ -407,6 +395,9 @@ async function loadScienceLayers() {
     if (!manifestResponse.ok || !seismicResponse.ok) throw new Error("Science layer manifest unavailable");
     state.scienceLayers = await manifestResponse.json();
     state.seismicEvents = await seismicResponse.json();
+    const hirise = new Image();
+    hirise.onload = () => { state.hiriseImage = hirise; document.getElementById("hirisePreview").src = hirise.src; renderScienceStatus(); };
+    hirise.src = "data/hirise-gale-dtm-color-altimetry.jpg";
     renderScienceStatus();
   } catch (error) {
     console.warn("Science layer metadata unavailable.", error);
@@ -430,16 +421,25 @@ function updateRoute() {
   document.getElementById("weightTotal").textContent = `${Math.round(total)}%`;
   const score = Math.round(25 + weights[0] * .18 + weights[1] * .14 + weights[2] * .11 + weights[3] * .1);
   document.getElementById("riskScore").textContent = score;
-  document.getElementById("distanceMetric").innerHTML = state.routeGeo.length > 1 ? `${state.routeGeo.slice(1).reduce((sum, point, index) => sum + marsDistanceKm(state.routeGeo[index], point), 0).toFixed(1)} <small>km</small>` : "— <small>km</small>";
   document.getElementById("timeMetric").innerHTML = `0${7 + Math.floor(score/35)}:${String(42 + score % 18).padStart(2,"0")} <small>h</small>`;
   if (state.molaGrid) {
     state.routeGeo = planRoute(state.molaGrid);
     updateRouteProfile();
+    renderWaypoints();
   }
+  const routeDistance = state.routeGeo.slice(1).reduce((sum, point, index) => sum + marsDistanceKm(state.routeGeo[index], point), 0);
+  document.getElementById("distanceMetric").innerHTML = routeDistance ? `${routeDistance.toFixed(1)} <small>km</small>` : "— <small>km</small>";
   drawMars();
 }
 function renderWaypoints() {
-  document.getElementById("waypointList").innerHTML = waypoints.map(([name, dist, risk, goal]) => `<div class="waypoint"><i class="waypoint-marker ${goal?"goal":""}"></i><div class="waypoint-info"><strong>${name}</strong><span>${dist}</span></div><span class="waypoint-risk" style="color:${risk==="MODERATE"?"var(--orange2)":risk==="TARGET"?"var(--violet)":"var(--green)"}">${risk}</span></div>`).join("");
+  const route = state.routeGeo;
+  const cumulative = [0];
+  route.slice(1).forEach((point, index) => cumulative.push(cumulative[index] + marsDistanceKm(route[index], point)));
+  const total = cumulative.at(-1) || 0;
+  document.getElementById("waypointList").innerHTML = waypoints.map(([name, , risk, goal], index) => {
+    const distance = total * (index / Math.max(1, waypoints.length - 1));
+    return `<div class="waypoint"><i class="waypoint-marker ${goal?"goal":""}"></i><div class="waypoint-info"><strong>${name}</strong><span>${total ? distance.toFixed(1) : "—"} km / route-derived</span></div><span class="waypoint-risk" style="color:${risk==="MODERATE"?"var(--orange2)":risk==="TARGET"?"var(--violet)":"var(--green)"}">${risk}</span></div>`;
+  }).join("");
 }
 document.querySelectorAll('input[type="range"]').forEach(input => input.addEventListener("input", e => { document.getElementById(`${e.target.id}Value`).textContent = `${e.target.value}%`; updateRoute(); }));
 document.querySelectorAll("[data-layer]").forEach(input => input.addEventListener("change", e => { hazards[e.target.dataset.layer] = e.target.checked; drawMars(); }));

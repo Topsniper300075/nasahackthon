@@ -17,6 +17,13 @@
       "use": "Downloaded catalog context; not treated as Gale-local route hazard"
     },
     {
+      "path": "hirise-gale-dtm-color-altimetry.jpg",
+      "source": "https://hirise-pds.lpl.arizona.edu/PDS/EXTRAS/DTM/PSP/ORB_009600_009699/PSP_009650_1755_PSP_009716_1755/DTEEC_009650_1755_009716_1755_U01.ca.jpg",
+      "provider": "NASA/JPL/University of Arizona HiRISE",
+      "usedBy": "app.js:loadScienceLayers",
+      "use": "High-resolution Gale DTM color-altimetry browse context; not used as a registered route-cost raster"
+    },
+    {
       "path": "mars-weather.json",
       "source": "https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json",
       "provider": "NASA Mars Science Laboratory",

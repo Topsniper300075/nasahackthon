@@ -13,6 +13,25 @@
       "caveat": "Regional DEM; not a rover-scale obstacle guarantee."
     },
     {
+      "id": "hirise",
+      "label": "HiRISE Gale DTM browse",
+      "status": "active",
+      "kind": "high-resolution-context",
+      "source": "https://hirise.lpl.arizona.edu/dtm/dtm.php?ID=PSP_009650_1755",
+      "localFile": "hirise-gale-dtm-color-altimetry.jpg",
+      "routeCost": false,
+      "caveat": "Color-altimetry browse derivative at approximately 1.01 m/pixel. The numeric 833 MB DTM is not bundled; this image is context-only until map registration is implemented."
+    },
+    {
+      "id": "places",
+      "label": "MSL PLACES rover localization",
+      "status": "planned",
+      "kind": "rover-track",
+      "source": "https://pds.nasa.gov/ds-view/pds/viewProfile.jsp?dsid=MSL-M-ROVER-6-RDR-PLACES-V1.0",
+      "routeCost": false,
+      "caveat": "Official localized/interpolated Curiosity positions are the next point-observation adapter; they must be joined using the PDS coordinate and map metadata."
+    },
+    {
       "id": "weather",
       "label": "MSL weather context",
       "status": "active",
