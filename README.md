@@ -2,6 +2,9 @@
 
 A polished, responsive prototype for the 2026 NASA Space Apps Challenge. The console combines a Mars surface visualization, hazard overlays, mission controls, route metrics, and an exportable mission brief.
 
+For a consolidated citation list covering every bundled data file, official
+source, planned adapter, and derived calculation, see [`SOURCES.md`](SOURCES.md).
+
 ## Run locally
 
 This is a dependency-free web prototype:
